@@ -1,0 +1,129 @@
+version: '3.8'
+
+services:
+  configsvr1:
+    container_name: mongodb_configsvr1
+    image: mongo:latest
+    command: mongod --configsvr --replSet configReplSet --port 27017 --dbpath /data/configdb
+    ports:
+      - "27117:27017"
+    volumes:
+      - configsvr1:/data/configdb
+    networks:
+      - mongodb_network
+
+  configsvr2:
+    container_name: mongodb_configsvr2
+    image: mongo:latest
+    command: mongod --configsvr --replSet configReplSet --port 27017 --dbpath /data/configdb
+    ports:
+      - "27217:27017"
+    volumes:
+      - configsvr2:/data/configdb
+    networks:
+      - mongodb_network
+
+  configsvr3:
+    container_name: mongodb_configsvr3
+    image: mongo:latest
+    command: mongod --configsvr --replSet configReplSet --port 27017 --dbpath /data/configdb
+    ports:
+      - "27317:27017"
+    volumes:
+      - configsvr3:/data/configdb
+    networks:
+      - mongodb_network
+
+  shard1svr:
+    container_name: mongodb_shard1
+    image: mongo:latest
+    command: mongod --shardsvr --replSet shard1 --port 27017 --dbpath /data/db
+    ports:
+      - "27118:27017"
+    volumes:
+      - shard1:/data/db
+    networks:
+      - mongodb_network
+
+  shard1svr_secondary1:
+    container_name: mongodb_shard1_secondary1
+    image: mongo:latest
+    command: mongod --shardsvr --replSet shard1 --port 27017 --dbpath /data/db
+    ports:
+      - "27119:27017"
+    volumes:
+      - shard1_secondary1:/data/db
+    networks:
+      - mongodb_network
+
+  shard1svr_secondary2:
+    container_name: mongodb_shard1_secondary2
+    image: mongo:latest
+    command: mongod --shardsvr --replSet shard1 --port 27017 --dbpath /data/db
+    ports:
+      - "27120:27017"
+    volumes:
+      - shard1_secondary2:/data/db
+    networks:
+      - mongodb_network
+
+  shard2svr:
+    container_name: mongodb_shard2
+    image: mongo:latest
+    command: mongod --shardsvr --replSet shard2 --port 27017 --dbpath /data/db
+    ports:
+      - "27218:27017"
+    volumes:
+      - shard2:/data/db
+    networks:
+      - mongodb_network
+
+  shard2svr_secondary1:
+    container_name: mongodb_shard2_secondary1
+    image: mongo:latest
+    command: mongod --shardsvr --replSet shard2 --port 27017 --dbpath /data/db
+    ports:
+      - "27219:27017"
+    volumes:
+      - shard2_secondary1:/data/db
+    networks:
+      - mongodb_network
+
+  shard2svr_secondary2:
+    container_name: mongodb_shard2_secondary2
+    image: mongo:latest
+    command: mongod --shardsvr --replSet shard2 --port 27017 --dbpath /data/db
+    ports:
+      - "27220:27017"
+    volumes:
+      - shard2_secondary2:/data/db
+    networks:
+      - mongodb_network
+
+  mongos:
+    container_name: mongodb_router
+    image: mongo:latest
+    command: mongos --configdb configReplSet/mongodb_configsvr1:27017,mongodb_configsvr2:27017,mongodb_configsvr3:27017 --bind_ip_all
+    ports:
+      - "27017:27017"
+    networks:
+      - mongodb_network
+    depends_on:
+      - configsvr1
+      - configsvr2
+      - configsvr3
+
+volumes:
+  configsvr1:
+  configsvr2:
+  configsvr3:
+  shard1:
+  shard1_secondary1:
+  shard1_secondary2:
+  shard2:
+  shard2_secondary1:
+  shard2_secondary2:
+
+networks:
+  mongodb_network:
+    driver: bridge
